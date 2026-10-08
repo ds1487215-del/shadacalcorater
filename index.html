@@ -3,19 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>حاسبة شدة الطرنيب</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <title>حاسبة الطرنيب التفاعلية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #0d2818;
-            --card-bg: rgba(16, 44, 27, 0.95);
+            --bg-main: #06150c;
+            --card-bg: #0c2415;
+            --card-border: rgba(229, 169, 59, 0.25);
             --accent-gold: #e5a93b;
-            --text-light: #f4f6f0;
-            --text-muted: #a3b899;
-            --team-a-color: #4ea8de;
-            --team-b-color: #f72585;
-            --border-radius: 16px;
-            --shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            --accent-gold-hover: #f5ba4c;
+            --team-a: #38bdf8;
+            --team-b: #f43f5e;
+            --text-light: #f8fafc;
+            --text-muted: #94a3b8;
+            --radius-lg: 18px;
+            --radius-md: 12px;
         }
 
         * {
@@ -27,113 +29,461 @@
         }
 
         body {
-            background: radial-gradient(circle at center, #164229 0%, #08190e 100%);
+            background: radial-gradient(circle at top center, #0f351f 0%, #040e08 100%);
             color: var(--text-light);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: flex-start;
-            padding: 15px;
+            padding: 12px;
         }
 
-        .container {
+        .app-container {
             width: 100%;
-            max-width: 500px;
+            max-width: 520px;
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            margin-bottom: 30px;
+            gap: 12px;
+            margin-bottom: 25px;
         }
 
         header {
             text-align: center;
-            padding: 10px 0;
-            position: relative;
+            padding: 6px 0;
         }
 
         header h1 {
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             color: var(--accent-gold);
-            font-weight: 800;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            font-weight: 900;
         }
 
         header p {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: var(--text-muted);
         }
 
-        .settings-btn {
-            position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: var(--text-light);
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            cursor: pointer;
-        }
-
+        /* لوحة النتائج الإجمالية */
         .scoreboard {
             background: var(--card-bg);
-            border: 2px solid rgba(229, 169, 59, 0.3);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            box-shadow: var(--shadow);
+            border: 2px solid var(--card-border);
+            border-radius: var(--radius-lg);
+            padding: 15px;
             display: flex;
             justify-content: space-between;
-            position: relative;
+            align-items: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
         }
 
-        .team-score {
+        .score-box {
             flex: 1;
             text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
         }
 
-        .team-name {
+        .team-title {
             font-size: 1.1rem;
-            font-weight: 700;
-            margin-bottom: 5px;
+            font-weight: 800;
+            margin-bottom: 4px;
         }
 
-        .team-a .team-name { color: var(--team-a-color); }
-        .team-b .team-name { color: var(--team-b-color); }
+        .team-a-title { color: var(--team-a); }
+        .team-b-title { color: var(--team-b); }
 
-        .score-val {
-            font-size: 3rem;
-            font-weight: 800;
+        .score-num {
+            font-size: 2.8rem;
+            font-weight: 900;
             line-height: 1;
-            margin: 5px 0;
         }
 
         .divider {
             width: 2px;
+            height: 50px;
             background: linear-gradient(to bottom, transparent, var(--accent-gold), transparent);
             margin: 0 10px;
         }
 
-        .target-badge {
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--accent-gold);
-            color: #000;
-            font-size: 0.7rem;
-            font-weight: 800;
-            padding: 2px 10px;
-            border-radius: 10px;
+        /* شريط المعاينة والعملية */
+        .preview-bar {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-md);
+            padding: 10px;
+            text-align: center;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+            min-height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .card-panel {
+        /* شريط أدوات التحكم (+ - = تصفير) */
+        .controls-bar {
+            display: grid;
+            grid-template-columns: 1fr 1fr 2fr 1fr;
+            gap: 8px;
+        }
+
+        .ctrl-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            color: #fff;
+            padding: 12px 0;
+            border-radius: var(--radius-md);
+            font-size: 1.3rem;
+            font-weight: 900;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+
+        .ctrl-btn.active-op {
+            background: var(--accent-gold);
+            color: #000;
+            border-color: var(--accent-gold);
+        }
+
+        .btn-equal {
+            background: linear-gradient(135deg, #22c55e 0%, #15803d 100%);
+            border: none;
+            color: #fff;
+            font-size: 1.5rem;
+        }
+
+        .btn-reset {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #fca5a5;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        /* الفريقين جنب إلى جنب */
+        .teams-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .team-column {
             background: var(--card-bg);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: var(--border-radius);
-            padding: 18px;
-            box-shadow: var(--
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-lg);
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .column-header {
+            text-align: center;
+            font-weight: 800;
+            font-size: 1rem;
+            padding-bottom: 6px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* شبكة أزرار الأرقام من 1 إلى 13 */
+        .num-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 6px;
+        }
+
+        .num-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: var(--text-light);
+            padding: 10px 0;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 800;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .team-a-col .num-btn:active, .team-a-col .num-btn.selected {
+            background: rgba(56, 189, 248, 0.25);
+            border-color: var(--team-a);
+            color: var(--team-a);
+        }
+
+        .team-b-col .num-btn:active, .team-b-col .num-btn.selected {
+            background: rgba(244, 63, 94, 0.25);
+            border-color: var(--team-b);
+            color: var(--team-b);
+        }
+
+        /* جدول السجل والتراجع */
+        .history-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-lg);
+            padding: 12px;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .history-title {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: var(--accent-gold);
+        }
+
+        .btn-undo {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #fca5a5;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .history-table th, .history-table td {
+            padding: 6px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .history-table th {
+            color: var(--text-muted);
+        }
+
+        .plus-val { color: #4ade80; }
+        .minus-val { color: #f87171; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <header>
+        <h1>حاسبة الطرنيب</h1>
+        <p>مجموع مفتوح - تحكم كامل بالأزرار</p>
+    </header>
+
+    <!-- شاشة المجموع التراكمي -->
+    <div class="scoreboard">
+        <div class="score-box">
+            <div class="team-title team-a-title">الفريق الأول</div>
+            <div class="score-num" id="scoreA">0</div>
+        </div>
+        <div class="divider"></div>
+        <div class="score-box">
+            <div class="team-title team-b-title">الفريق الثاني</div>
+            <div class="score-num" id="scoreB">0</div>
+        </div>
+    </div>
+
+    <!-- شريط المعاينة والعملية -->
+    <div class="preview-bar" id="previewBar">اختر (+) أو (-) ثم الرقم من تحت الفريق، ثم اضغط (=)</div>
+
+    <!-- لوحة التحكم بالعمليات -->
+    <div class="controls-bar">
+        <button class="ctrl-btn active-op" id="btnPlus" onclick="setOp('+')">+</button>
+        <button class="ctrl-btn" id="btnMinus" onclick="setOp('-')">-</button>
+        <button class="ctrl-btn btn-equal" onclick="executeOp()">=</button>
+        <button class="ctrl-btn btn-reset" onclick="resetGame()">تصفير 🔄</button>
+    </div>
+
+    <!-- الفريقين متجاورين جنب إلى جنب -->
+    <div class="teams-wrapper">
+        <!-- الفريق الأول (يمين) -->
+        <div class="team-column team-a-col">
+            <div class="column-header team-a-title">الفريق الأول</div>
+            <div class="num-grid" id="gridA"></div>
+        </div>
+
+        <!-- الفريق الثاني (يسار) -->
+        <div class="team-column team-b-col">
+            <div class="column-header team-b-title">الفريق الثاني</div>
+            <div class="num-grid" id="gridB"></div>
+        </div>
+    </div>
+
+    <!-- السجل والتراجع -->
+    <div class="history-card">
+        <div class="history-header">
+            <div class="history-title">سجل العمليات</div>
+            <button class="btn-undo" onclick="undoLast()">تراجع ↩️</button>
+        </div>
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>الفريق</th>
+                    <th>العملية</th>
+                    <th>النقاط</th>
+                    <th>فريق 1</th>
+                    <th>فريق 2</th>
+                </tr>
+            </thead>
+            <tbody id="historyBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    var currentOp = '+';
+    var selectedTeam = null;
+    var selectedVal = null;
+
+    var totalA = 0;
+    var totalB = 0;
+    var historyList = [];
+
+    window.onload = function() {
+        buildGrids();
+        updateUI();
+    };
+
+    function setOp(op) {
+        currentOp = op;
+        document.getElementById('btnPlus').className = 'ctrl-btn ' + (op === '+' ? 'active-op' : '');
+        document.getElementById('btnMinus').className = 'ctrl-btn ' + (op === '-' ? 'active-op' : '');
+        updatePreview();
+    }
+
+    function buildGrids() {
+        var gridA = document.getElementById('gridA');
+        var gridB = document.getElementById('gridB');
+        gridA.innerHTML = '';
+        gridB.innerHTML = '';
+
+        for (var i = 1; i <= 13; i++) {
+            (function(num) {
+                // أزرار الفريق الأول
+                var btnA = document.createElement('button');
+                btnA.className = 'num-btn';
+                btnA.innerText = num;
+                btnA.onclick = function() {
+                    selectNum('A', num);
+                };
+                gridA.appendChild(btnA);
+
+                // أزرار الفريق الثاني
+                var btnB = document.createElement('button');
+                btnB.className = 'num-btn';
+                btnB.innerText = num;
+                btnB.onclick = function() {
+                    selectNum('B', num);
+                };
+                gridB.appendChild(btnB);
+            })(i);
+        }
+    }
+
+    function selectNum(team, val) {
+        selectedTeam = team;
+        selectedVal = val;
+        updatePreview();
+    }
+
+    function updatePreview() {
+        var bar = document.getElementById('previewBar');
+        if (!selectedTeam || !selectedVal) {
+            bar.innerText = "العملية الحالية: (" + currentOp + ") | اختر الرقم من تحت الفريق المطلـوب";
+            return;
+        }
+
+        var teamName = selectedTeam === 'A' ? "الفريق الأول" : "الفريق الثاني";
+        var opText = currentOp === '+' ? "زيادة" : "خصم";
+        bar.innerText = teamName + " 👈 " + opText + " (" + currentOp + selectedVal + ") | اضغط (=) للتأكيد";
+    }
+
+    function executeOp() {
+        if (!selectedTeam || !selectedVal) {
+            alert("يرجى اختيار الرقم أولاً من تحت أحد الفريقين!");
+            return;
+        }
+
+        var amount = currentOp === '+' ? selectedVal : -selectedVal;
+
+        if (selectedTeam === 'A') {
+            totalA += amount;
+        } else {
+            totalB += amount;
+        }
+
+        historyList.push({
+            team: selectedTeam,
+            op: currentOp,
+            val: selectedVal,
+            amount: amount,
+            totA: totalA,
+            totB: totalB
+        });
+
+        // إعادة التعيين
+        selectedTeam = null;
+        selectedVal = null;
+
+        updateUI();
+        updatePreview();
+    }
+
+    function undoLast() {
+        if (historyList.length === 0) return;
+        var last = historyList.pop();
+
+        if (last.team === 'A') {
+            totalA -= last.amount;
+        } else {
+            totalB -= last.amount;
+        }
+
+        updateUI();
+        updatePreview();
+    }
+
+    function resetGame() {
+        if (confirm("هل تريد تصفير النقاط والبدء من جديد؟")) {
+            totalA = 0;
+            totalB = 0;
+            historyList = [];
+            selectedTeam = null;
+            selectedVal = null;
+            updateUI();
+            updatePreview();
+        }
+    }
+
+    function updateUI() {
+        document.getElementById('scoreA').innerText = totalA;
+        document.getElementById('scoreB').innerText = totalB;
+
+        var tbody = document.getElementById('historyBody');
+        tbody.innerHTML = '';
+
+        for (var i = 0; i < historyList.length; i++) {
+            var item = historyList[i];
+            var tr = document.createElement('tr');
+            var tName = item.team === 'A' ? "الفريق الأول" : "الفريق الثاني";
+            var valClass = item.amount > 0 ? "plus-val" : "minus-val";
+            var valStr = item.amount > 0 ? ("+" + item.val) : ("-" + item.val);
+
+            tr.innerHTML = '<td>' + (i + 1) + '</td>' +
+                           '<td>' + tName + '</td>' +
+                           '<td>' + (item.op === '+' ? 'زيادة' : 'خصم') + '</td>' +
+                           '<td class="' + valClass + '">' + valStr + '</td>' +
+                           '<td>' + item.totA + '</td>' +
+                           '<td>' + item.totB + '</td>';
+
+            tbody.insertBefore(tr, tbody.firstChild);
+        }
+    }
+</script>
+</body>
+</html>
