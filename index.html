@@ -3,127 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>حاسبة شدة الطرنيب</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <title>حاسبة الطرنيب</title>
     <style>
-        :root {
-            --bg-color: #0d2818;
-            --card-bg: rgba(16, 44, 27, 0.85);
-            --accent-gold: #e5a93b;
-            --text-light: #f4f6f0;
-            --text-muted: #a3b899;
-            --team-a-color: #4ea8de;
-            --team-b-color: #f72585;
-            --border-radius: 16px;
-            --shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        body { font-family: sans-serif; background: #0d2818; color: #fff; padding: 15px; text-align: center; }
+        .box { background: #164229; border: 2px solid #e5a93b; border-radius: 12px; padding: 15px; margin-bottom: 15px; }
+        .scores { display: flex; justify-content: space-around; font-size: 1.5rem; }
+        .score-val { font-size: 2.5rem; color: #e5a93b; font-weight: bold; }
+        select, input, button { width: 100%; padding: 10px; margin: 5px 0; border-radius: 8px; border: 1px solid #ccc; font-size: 1rem; }
+        button { background: #e5a93b; color: #000; font-weight: bold; cursor: pointer; border: none; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #333; padding: 8px; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <h2>حاسبة شدة الطرنيب</h2>
+
+    <div class="box">
+        <div class="scores">
+            <div><div id="nA">الفريق الأول</div><div class="score-val" id="sA">0</div></div>
+            <div>|</div>
+            <div><div id="nB">الفريق الثاني</div><div class="score-val" id="sB">0</div></div>
+        </div>
+    </div>
+
+    <div class="box">
+        <h3>تسجيل جولة</h3>
+        <label>الفريق الشارط:</label>
+        <select id="bidder">
+            <option value="A">الفريق الأول</option>
+            <option value="B">الفريق الثاني</option>
+        </select>
+
+        <label>الشرط (7 - 13):</label>
+        <input type="number" id="bid" min="7" max="13" value="7">
+
+        <label>الأكلات المحققة:</label>
+        <input type="number" id="tricks" min="0" max="13" value="7">
+
+        <button onclick="addRound()">تسجيل</button>
+        <button onclick="undoRound()" style="background:#ff4d4d; color:#fff; margin-top:5px;">تراجع ↩️</button>
+    </div>
+
+    <div class="box">
+        <h3>سجل الجولات</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>الشارط</th>
+                    <th>فريق 1</th>
+                    <th>فريق 2</th>
+                </tr>
+            </thead>
+            <tbody id="history"></tbody>
+        </table>
+    </div>
+
+<script>
+    let sA = 0, sB = 0, rounds = [];
+
+    function addRound() {
+        let bidder = document.getElementById('bidder').value;
+        let bid = parseInt(document.getElementById('bid').value);
+        let tricks = parseInt(document.getElementById('tricks').value);
+
+        let pA = 0, pB = 0;
+
+        if (bidder === 'A') {
+            if (tricks >= bid) { pA = tricks; pB = 0; }
+            else { pA = -bid; pB = 13 - tricks; }
+        } else {
+            if (tricks >= bid) { pB = tricks; pA = 0; }
+            else { pB = -bid; pA = 13 - tricks; }
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Tajawal', sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
+        sA += pA; sB += pB;
+        rounds.push({ bidder, pA, pB, totalA: sA, totalB: sB });
+        update();
+    }
 
-        body {
-            background: radial-gradient(circle at center, #164229 0%, #08190e 100%);
-            color: var(--text-light);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            padding: 15px;
-        }
+    function undoRound() {
+        if (rounds.length === 0) return;
+        let r = rounds.pop();
+        sA -= r.pA; sB -= r.pB;
+        update();
+    }
 
-        .container {
-            width: 100%;
-            max-width: 500px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-bottom: 30px;
-        }
+    function update() {
+        document.getElementById('sA').innerText = sA;
+        document.getElementById('sB').innerText = sB;
+        let tbody = document.getElementById('history');
+        tbody.innerHTML = '';
+        rounds.forEach((r, i) => {
+            let row = `<tr>
+                <td>${i + 1}</td>
+                <td>${r.bidder === 'A' ? 'فريق 1' : 'فريق 2'}</td>
+                <td>${r.pA} (${r.totalA})</td>
+                <td>${r.pB} (${r.totalB})</td>
+            </tr>`;
+            tbody.innerHTML = row + tbody.innerHTML;
+        });
 
-        header {
-            text-align: center;
-            padding: 10px 0;
-            position: relative;
-        }
-
-        header h1 {
-            font-size: 1.8rem;
-            color: var(--accent-gold);
-            font-weight: 800;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-        }
-
-        header p {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-        }
-
-        .settings-btn {
-            position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: var(--text-light);
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .scoreboard {
-            background: var(--card-bg);
-            border: 2px solid rgba(229, 169, 59, 0.3);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            box-shadow: var(--shadow);
-            backdrop-filter: blur(10px);
-            display: flex;
-            justify-content: space-between;
-            position: relative;
-        }
-
-        .team-score {
-            flex: 1;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .team-name {
-            font-size: 1.1rem;
-            font-weight: 700;
-            margin-bottom: 5px;
-            max-width: 120px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .team-a .team-name { color: var(--team-a-color); }
-        .team-b .team-name { color: var(--team-b-color); }
-
-        .score-val {
-            font-size: 3rem;
-            font-weight: 800;
-            line-height: 1;
-            margin: 5px 0;
-        }
-
-        .divider {
-            width: 2px;
-            background: linear-gradient(to bottom, transparent, var(--accent-gold), transparent);
-            margin: 0 10px;
-        }
-
-        .target-badge {
-            position: absolute;
-            top: 10
+        if (sA >= 41 && sA > sB) alert("فاز الفريق الأول!");
+        if (sB >= 41 && sB > sA) alert("فاز الفريق الثاني!");
+    }
+</script>
+</body>
+</html>
